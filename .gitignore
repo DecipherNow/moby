@@ -1,0 +1,9 @@
+# IntelliJ Project Files
+.idea
+*.iml
+
+# Build Directory
+target
+
+# ScalaStyle Ouput
+*/scalastyle-output.xml
