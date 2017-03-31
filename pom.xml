@@ -23,7 +23,15 @@
     <groupId>com.deciphernow</groupId>
     <artifactId>moby</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <modules>
         <module>moby-dns</module>
@@ -48,11 +56,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
+        <version.gpg.plugin>1.6</version.gpg.plugin>
         <version.guava>19.0</version.guava>
         <version.java.plugin>3.6.0</version.java.plugin>
         <version.java.source>1.8</version.java.source>
         <version.java.target>1.8</version.java.target>
+        <version.javadoc.plugin>2.10.4</version.javadoc.plugin>
         <version.junit>4.10</version.junit>
+        <version.release.plugin>2.5.3</version.release.plugin>
         <version.scala.plugin>3.2.2</version.scala.plugin>
         <version.scala.source>2.11.8</version.scala.source>
         <version.scala.target>2.11</version.scala.target>
@@ -60,6 +71,7 @@
         <version.scalatest>3.0.0</version.scalatest>
         <version.scalatest.plugin>1.0</version.scalatest.plugin>
         <version.scoverage.plugin>1.2.0</version.scoverage.plugin>
+        <version.source.plugin>3.0.1</version.source.plugin>
         <version.surefire.plugin>2.19.1</version.surefire.plugin>
     </properties>
 
@@ -108,6 +120,18 @@
                     <artifactId>scala-maven-plugin</artifactId>
                     <version>${version.scala.plugin}</version>
                     <executions>
+                        <execution>
+                            <id>scala-attach-scaladocs</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>doc-jar</goal>
+                            </goals>
+                            <configuration>
+                                <args>
+                                    <arg>-no-link-warnings</arg>
+                                </args>
+                            </configuration>
+                        </execution>
                         <execution>
                             <id>scala-compile-first</id>
                             <phase>process-resources</phase>
@@ -173,6 +197,38 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${version.gpg.plugin}</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${version.release.plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${version.source.plugin}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${version.surefire.plugin}</version>
                     <configuration>
@@ -228,5 +284,11 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
 </project>

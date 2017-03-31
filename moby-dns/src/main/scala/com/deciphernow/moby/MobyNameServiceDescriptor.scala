@@ -36,19 +36,25 @@ class MobyNameServiceDescriptor extends NameServiceDescriptor {
   val providerType = "dns"
 
   /**
-    * {@inheritdoc}
+    * Returns the [[MobyNameService]] object.
+    *
+    * @return the name service
     */
   override def createNameService(): NameService = {
     MobyNameService
   }
 
   /**
-    * {@inheritdoc}
+    * Gets the provider type for this descriptor.
+    *
+    * @return the type
     */
   override def getType: String = providerType
 
   /**
-    * {@inheritdoc}
+    * Gets the provider name for this descriptor.
+    *
+    * @return the name
     */
   override def getProviderName: String = providerName
 
