@@ -15,12 +15,15 @@
   */
 package com.deciphernow.moby
 
+import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
+import org.scalatest.junit.JUnitRunner
 
 /**
   * Provides unit tests for the [[MobyNameServiceDescriptor]] class.
   */
-class MobyNameServiceDescriptorSpec extends FlatSpec {
+@RunWith(classOf[JUnitRunner])
+class SpecMobyNameServiceDescriptor extends FlatSpec {
 
   val mobyNameServiceDescriptor = new MobyNameServiceDescriptor()
 
