@@ -46,7 +46,13 @@
     <properties>
         <maven.test.runOrder>hourly</maven.test.runOrder>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
         <version.guava>19.0</version.guava>
+        <version.java.plugin>3.6.0</version.java.plugin>
+        <version.java.source>1.8</version.java.source>
+        <version.java.target>1.8</version.java.target>
+        <version.junit>4.10</version.junit>
         <version.scala.plugin>3.2.2</version.scala.plugin>
         <version.scala.source>2.11.8</version.scala.source>
         <version.scala.target>2.11</version.scala.target>
@@ -65,14 +71,31 @@
                 <version>${version.guava}</version>
             </dependency>
             <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${version.junit}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
+                <version>${version.scala.source}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-compiler</artifactId>
                 <version>${version.scala.source}</version>
             </dependency>
             <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_${version.scala.target}</artifactId>
                 <version>${version.scalatest}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scalacheck</groupId>
+                <artifactId>scalacheck_${version.scala.target}</artifactId>
+                <version>${version.scalacheck}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -81,49 +104,104 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
-                        <skipMain>true</skipMain>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <configuration>
-                        <skipTests>true</skipTests>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
                     <version>${version.scala.plugin}</version>
                     <executions>
                         <execution>
-                            <id>compile</id>
+                            <id>scala-compile-first</id>
+                            <phase>process-resources</phase>
                             <goals>
+                                <goal>add-source</goal>
                                 <goal>compile</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>scala-test-compile</id>
+                            <phase>process-test-resources</phase>
+                            <goals>
                                 <goal>testCompile</goal>
                             </goals>
                         </execution>
                     </executions>
                 </plugin>
                 <plugin>
-                    <groupId>org.scalatest</groupId>
-                    <artifactId>scalatest-maven-plugin</artifactId>
-                    <version>${version.scalatest.plugin}</version>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${version.java.plugin}</version>
                     <configuration>
-                        <reportsDirectory>${project.build.directory}/scalatest-reports</reportsDirectory>
-                        <junitxml>.</junitxml>
-                        <filereports>WDF TestSuite.txt</filereports>
+                        <source>${version.java.source}</source>
+                        <target>${version.java.target}</target>
                     </configuration>
                     <executions>
                         <execution>
-                            <id>test</id>
-                            <phase>test</phase>
+                            <phase>compile</phase>
                             <goals>
-                                <goal>test</goal>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${version.failsafe.plugin}</version>
+                    <executions>
+                        <execution>
+                            <id>integration-test</id>
+                            <phase>integration-test</phase>
+                            <goals>
+                                <goal>integration-test</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>verify</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <runOrder>${maven.test.runOrder}</runOrder>
+                        <includes>
+                            <include>**/IntTest*.class</include>
+                            <include>**/IntSpec*.class</include>
+                        </includes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${version.surefire.plugin}</version>
+                    <configuration>
+                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <runOrder>${maven.test.runOrder}</runOrder>
+                        <includes>
+                            <include>**/Test*.class</include>
+                            <include>**/Spec*.class</include>
+                        </includes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.scalastyle</groupId>
+                    <artifactId>scalastyle-maven-plugin</artifactId>
+                    <version>${version.scalastyle.plugin}</version>
+                    <configuration>
+                        <verbose>false</verbose>
+                        <failOnViolation>true</failOnViolation>
+                        <failOnWarning>true</failOnWarning>
+                        <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
+                        <configLocation>${project.basedir}/../scalastyle.xml</configLocation>
+                        <outputFile>${project.build.directory}/scalastyle-output.xml</outputFile>
+                        <outputEncoding>UTF-8</outputEncoding>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>check-code-style</id>
+                            <goals>
+                                <goal>check</goal>
                             </goals>
                         </execution>
                     </executions>
@@ -140,30 +218,10 @@
                     <executions>
                         <execution>
                             <id>check-code-coverage</id>
-                            <phase>test</phase>
+                            <phase>prepare-package</phase>
                             <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.scalastyle</groupId>
-                    <artifactId>scalastyle-maven-plugin</artifactId>
-                    <version>${version.scalastyle.plugin}</version>
-                    <configuration>
-                        <verbose>false</verbose>
-                        <failOnViolation>true</failOnViolation>
-                        <failOnWarning>true</failOnWarning>
-                        <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
-                        <configLocation>${project.basedir}/../scalastyle.xml</configLocation>
-                        <outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
-                        <outputEncoding>UTF-8</outputEncoding>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>check</goal>
+                                <goal>integration-check</goal>
+                                <goal>integration-report</goal>
                             </goals>
                         </execution>
                     </executions>
@@ -171,17 +229,4 @@
             </plugins>
         </pluginManagement>
     </build>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
-                <configuration>
-                    <scalaVersion>${version.scala.source}</scalaVersion>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
-
 </project>
