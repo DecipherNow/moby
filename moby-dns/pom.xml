@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.deciphernow</groupId>
         <artifactId>moby</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>moby-dns</artifactId>
@@ -68,6 +68,10 @@
                         <sun.net.spi.nameservice.provider.2>default</sun.net.spi.nameservice.provider.2>
                     </systemProperties>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

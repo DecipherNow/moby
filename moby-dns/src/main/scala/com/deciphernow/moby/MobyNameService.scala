@@ -26,10 +26,9 @@ import sun.net.spi.nameservice.NameService
 /**
   * Provides an implementation of the [[NameService]] interface that resolves the IP addresses of docker containers.
   *
-  * By implementing the [[NameService]] interface this object allows JVM processes running in the Oracle JRE/JDK to
-  * override the system name service providers for the purpose of resolving docker container names to appropriate docker
-  * host. For example, when running docker locally (e.g., via dockerd or docker for mac) container hostnames cannot be
-  * resolved from the host computer.  While in many cases this is not
+  * By implementing the [[NameService]] interface this object allows JVM processes running in the Oracle JRE/JDK to override the system name service providers
+  * for the purpose of resolving docker container names to the appropriate docker host. For example, when running docker locally (e.g., via dockerd or docker
+  * for mac) container hostnames cannot be resolved from the host computer.
   */
 object MobyNameService extends NameService {
 
@@ -64,7 +63,11 @@ object MobyNameService extends NameService {
   val dockerBytes = getBytes(dockerHost)
 
   /**
-    * @inheritdoc
+    * Returns the addresses that resolve for a hostname.
+    *
+    * @param host the hostname
+    * @return the addresses
+    * @throws UnknownHostException if the hostname does not resolve
     */
   override def lookupAllHostAddr(host: String): Array[InetAddress] = {
     if (!s"^.+\\.$dockerDomain$$".r.findAllIn(host).hasNext) {
@@ -74,7 +77,11 @@ object MobyNameService extends NameService {
   }
 
   /**
-    * @inheritdoc
+    * Returns the hostname that corresponds to an address.
+    *
+    * @param bytes the address
+    * @return the hostname
+    * @throws UnknownHostException if the address does not correspond to a hostname
     */
   override def getHostByAddr(bytes: Array[Byte]): String = {
     throw new UnknownHostException()
