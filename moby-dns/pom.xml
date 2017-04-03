@@ -28,6 +28,9 @@
 
     <artifactId>moby-dns</artifactId>
 
+    <name>Moby Docker Nameservice Library</name>
+    <description>This project provides a nameservice implementation for resolving Docker containers from the host computer.</description>
+
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -68,10 +71,6 @@
                         <sun.net.spi.nameservice.provider.2>default</sun.net.spi.nameservice.provider.2>
                     </systemProperties>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -25,6 +25,10 @@
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
 
+    <name>Moby Docker Libraries</name>
+    <description>This project provides libraries for working with Docker from the JVM.</description>
+    <url>https://github.com/deciphernow/moby</url>
+
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -43,6 +47,17 @@
         <url>https://github.com/deciphernow/moby</url>
     </scm>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
     <developers>
         <developer>
             <name>Joshua Rutherford</name>
@@ -55,8 +70,9 @@
         <maven.test.runOrder>hourly</maven.test.runOrder>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <version.bouncycastle.plugin>1.0.0</version.bouncycastle.plugin>
+        <version.deploy.plugin>2.8.2</version.deploy.plugin>
         <version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
-        <version.gpg.plugin>1.6</version.gpg.plugin>
         <version.guava>19.0</version.guava>
         <version.java.plugin>3.6.0</version.java.plugin>
         <version.java.source>1.8</version.java.source>
@@ -73,6 +89,7 @@
         <version.scoverage.plugin>1.2.0</version.scoverage.plugin>
         <version.source.plugin>3.0.1</version.source.plugin>
         <version.surefire.plugin>2.19.1</version.surefire.plugin>
+        <version.vault.plugin>1.0.0</version.vault.plugin>
     </properties>
 
     <dependencyManagement>
@@ -115,6 +132,62 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>com.deciphernow</groupId>
+                    <artifactId>bouncycastle-maven-plugin</artifactId>
+                    <version>${version.bouncycastle.plugin}</version>
+                    <configuration>
+                        <passphrase>${pgp.passphrase}</passphrase>
+                        <rings>${pgp.private}</rings>
+                        <userId>build@deciphernow.com</userId>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>com.deciphernow</groupId>
+                    <artifactId>vault-maven-plugin</artifactId>
+                    <version>${version.vault.plugin}</version>
+                    <executions>
+                        <execution>
+                            <id>pull</id>
+                            <phase>initialize</phase>
+                            <goals>
+                                <goal>pull</goal>
+                            </goals>
+                            <configuration>
+                                <servers>
+                                    <server>
+                                        <url>${env.VAULT_SERVER}</url>
+                                        <token>${env.VAULT_TOKEN}</token>
+                                        <paths>
+                                            <path>
+                                                <name>pgp-keys/build</name>
+                                                <mappings>
+                                                    <mapping>
+                                                        <key>pgp.passphrase</key>
+                                                        <property>pgp.passphrase</property>
+                                                    </mapping>
+                                                    <mapping>
+                                                        <key>pgp.private</key>
+                                                        <property>pgp.private</property>
+                                                    </mapping>
+                                                </mappings>
+                                            </path>
+                                        </paths>
+                                    </server>
+                                </servers>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
                 <plugin>
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
@@ -168,6 +241,11 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${version.deploy.plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>${version.failsafe.plugin}</version>
                     <executions>
@@ -197,14 +275,14 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-gpg-plugin</artifactId>
-                    <version>${version.gpg.plugin}</version>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${version.javadoc.plugin}</version>
                     <executions>
                         <execution>
-                            <id>sign-artifacts</id>
-                            <phase>verify</phase>
+                            <id>attach-javadocs</id>
+                            <phase>package</phase>
                             <goals>
-                                <goal>sign</goal>
+                                <goal>jar</goal>
                             </goals>
                         </execution>
                     </executions>
@@ -213,6 +291,10 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
                     <version>${version.release.plugin}</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <tagNameFormat>v@{project.version}</tagNameFormat>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -284,11 +366,35 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-            </plugin>
-        </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>deploy</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.deciphernow</groupId>
+                        <artifactId>bouncycastle-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.deciphernow</groupId>
+                        <artifactId>vault-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
