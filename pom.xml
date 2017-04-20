@@ -21,7 +21,7 @@
     <groupId>com.deciphernow</groupId>
     <artifactId>moby</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <name>Moby Docker Libraries</name>
     <description>This project provides libraries for working with Docker from the JVM.</description>
@@ -43,7 +43,7 @@
         <connection>scm:git:git@github.com:deciphernow/moby.git</connection>
         <developerConnection>scm:git:git@github.com:deciphernow/moby.git</developerConnection>
         <url>https://github.com/deciphernow/moby</url>
-      <tag>v1.0.0</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <distributionManagement>
