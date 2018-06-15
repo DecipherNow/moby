@@ -4,4 +4,4 @@ machine:
 
 deployment:
     override:
-        - if [ -z "${CI_PULL_REQUEST}" ]; then mvn deploy -P deploy -s settings.xml; fi
+        - if [ -z "${CI_PULL_REQUEST}" ]; then PGP_RINGS="$(echo ${PGP_RINGS_ENCODED} | base64 --decode)" mvn deploy -P deploy -s settings.xml; fi
