@@ -1,16 +1,23 @@
 version: 2
 jobs:
-  build:
-    docker:
-      - image: circleci/openjdk:8
-    steps:
-      - checkout
   test:
     docker:
       - image: circleci/openjdk:8
     steps:
       - checkout
-      - run:  if [ -z "${CI_PULL_REQUEST}" ]; then PGP_RINGS="$(echo ${PGP_RINGS_ENCODED} | base64 --decode)" mvn deploy -P deploy -s settings.xml; fi
-
-
-      
+      - run: mvn verify
+  deploy:
+    docker:
+      - image: circleci/openjdk:8
+    steps:
+      - checkout
+      - run: PGP_RINGS="$(echo ${PGP_RINGS_ENCODED} | base64 --decode)" mvn deploy -P deploy -s settings.xml
+workflows:
+  version: 2
+  test-and-deploy:
+    jobs:
+      - test
+      - deploy:
+        filters:
+          branches:
+            only: master
