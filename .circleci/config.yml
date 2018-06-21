@@ -5,7 +5,7 @@ jobs:
       - image: circleci/openjdk:8
     steps:
       - checkout
-      - run: PGP_RINGS="$(echo ${PGP_RINGS_ENCODED} | base64 --decode)" mvn deploy -P deploy -s settings.xml
+      - run: mvn clean compile
   test:
     docker:
       - image: circleci/openjdk:8
@@ -23,9 +23,23 @@ workflows:
   version: 2
   test-and-deploy:
     jobs:
-      - build
-      - test
+      - build:
+          filters:
+            branches:
+              only: /.*/
+      - test:
+          requires:
+            - build
+          filters:
+            branches:
+              only: /.*/
       - deploy:
-        filters:
-          branches:
-            only: master
+          requires:
+            - build
+            - test
+          filters:
+            branches:
+              only: master
+
+#error messages 6/21/18 -- MRW
+#[ERROR] Failed to execute goal org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy (default-deploy) on project moby: Failed to deploy artifacts: Could not transfer artifact com.deciphernow:moby:pom:1.0.1-20180619.145843-5 from/to ossrh (https://oss.sonatype.org/content/repositories/snapshots): Failed to transfer file: https://oss.sonatype.org/content/repositories/snapshots/com/deciphernow/moby/1.0.1-SNAPSHOT/moby-1.0.1-20180619.145843-5.pom. Return code is: 401, ReasonPhrase: Unauthorized. -> [Help 1]
